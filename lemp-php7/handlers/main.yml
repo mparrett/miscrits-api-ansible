@@ -1,0 +1,18 @@
+---
+  - name: reload nginx
+    action: service name=nginx state=reloaded
+
+  - name: restart nginx
+    action: service name=nginx state=restarted
+
+  - name: restart php7.0-fpm
+    action: service name=php7.0-fpm state=restarted
+
+  - name: reload php7.0-fpm
+    action: service name=php7.0-fpm state=reloaded
+
+  - name: reload sysctls
+    command: sysctl -p
+
+  - name: restart datadog-agent
+    action: service name=datadog-agent state=restarted

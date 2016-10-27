@@ -1,0 +1,8 @@
+---
+# file: miscrits-api.yml
+- hosts: temp
+  sudo: true
+  roles:
+      - { role: common-ubuntu, datadog_tags: 'role:api,game:miscrits,env:live' }
+      - lemp-php7
+      - miscrits-lemp

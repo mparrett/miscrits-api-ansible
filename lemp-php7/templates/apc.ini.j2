@@ -1,0 +1,13 @@
+; {{ ansible_managed }}
+
+extension=apc.so
+
+apc.shm_size=256
+apc.ttl=7200
+apc.user_ttl=7200
+apc.num_files_hint=1024
+apc.enable_cli=1
+;apc.mmap_file_mask=/tmp/apc/apc.XXXXXX
+
+apc.write_lock = 1
+apc.slam_defense = 0

@@ -1,0 +1,14 @@
+- name: restart snmpd
+  service: name=snmpd state=restarted enabled=yes
+
+- name: restart ntp
+  service: name=ntp state=restarted enabled=yes
+
+- name: restart datadog-agent
+  service: name=datadog-agent state=restarted enabled=yes
+
+- name: reload sysctls
+  command: sysctl -p
+
+- name: restart ssh
+  action: service name=ssh state=restarted

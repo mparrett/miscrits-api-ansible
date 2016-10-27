@@ -1,0 +1,76 @@
+# {{ ansible_managed }}
+
+user www-data;
+worker_processes 2;
+pid /var/run/nginx.pid;
+
+events {
+    worker_connections 8192;
+    multi_accept on;
+    use epoll;
+}
+
+worker_rlimit_nofile 16384;
+
+http {
+
+    ##
+    # Basic Settings
+    ##
+
+    sendfile on;
+    tcp_nopush on;
+    tcp_nodelay on;
+
+    types_hash_max_size 2048;
+    server_tokens off;
+
+    # DigitalOcean recommended
+    keepalive_timeout 15;
+    send_timeout 10;
+    client_body_timeout 12;
+    client_header_timeout 12;
+
+    # https://gist.github.com/magnetikonline/11312172
+    fastcgi_buffers 8 16k;
+    fastcgi_buffer_size 32k;
+
+    # server_names_hash_bucket_size 64;
+    # server_name_in_redirect off;
+
+    include /etc/nginx/mime.types;
+    default_type application/octet-stream;
+
+    ##
+    # Logging Settings
+    ##
+
+    access_log /var/log/nginx/access.log;
+    error_log /var/log/nginx/error.log;
+
+    ##
+    # Gzip Settings
+    ##
+
+    gzip on;
+    gzip_disable "MSIE [1-6]\.(?!.*SV1)";
+
+    # gzip_vary on;
+    # gzip_proxied any;
+    # gzip_comp_level 6;
+    # gzip_buffers 16 8k;
+    # gzip_http_version 1.1;
+
+    gzip_min_length 10240;
+    gzip_proxied expired no-cache no-store private auth;
+    gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
+
+    ##
+    # Virtual Host Configs
+    ##
+
+    geoip_country  /usr/share/GeoIP/GeoIP.dat; # the country IP database
+
+    include /etc/nginx/conf.d/*.conf;
+    include /etc/nginx/sites-enabled/*;
+}

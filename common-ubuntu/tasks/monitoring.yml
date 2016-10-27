@@ -1,0 +1,37 @@
+---
+- apt_key:
+    url=https://download.newrelic.com/548C16BF.gpg
+
+- apt_repository: 
+    repo='deb https://apt.newrelic.com/debian/ newrelic non-free'
+    state=present
+    update_cache=yes
+
+- apt: name=newrelic-sysmond state=present update_cache=yes force=yes
+  when: newrelic_enabled
+
+- name: new relic 2
+  shell: nrsysmond-config --set license_key={{ newrelic_license }}
+  when: newrelic_enabled
+
+- service: name=newrelic-sysmond state=started enabled=yes
+  when: newrelic_enabled
+
+- name: trust datadog key
+  apt_key: id=0xC7A7DA52 state=present keyserver=keyserver.ubuntu.com
+
+- apt_repository:
+    repo='deb https://apt.datadoghq.com/ stable main'
+    state=present
+    update_cache=yes
+
+- apt: name=datadog-agent state=present update_cache=yes force=yes
+  when: datadog_enabled
+
+- template: src=../templates/datadog.conf.j2 dest=/etc/dd-agent/datadog.conf owner=dd-agent 
+  notify: restart datadog-agent
+  when: datadog_enabled
+
+- service: name=datadog-agent state=started enabled=yes
+  when: datadog_enabled
+

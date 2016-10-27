@@ -1,0 +1,41 @@
+# {{ ansible_managed }}
+
+/var/log/php7.0-fpm.log {
+    rotate 7
+    weekly
+    missingok
+    notifempty
+    sharedscripts
+    compress
+    create 640 www-data www-data
+    postrotate
+        /bin/kill -SIGUSR1 `cat /run/php/php7.0-fpm.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}
+
+/var/log/php.log {
+    rotate 7
+    daily
+    missingok
+    notifempty
+    sharedscripts
+    compress
+    create 640 www-data www-data
+    postrotate
+        /bin/kill -SIGUSR1 `cat /run/php/php7.0-fpm.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}
+
+/var/log/php7.0-fpm/*log {
+    rotate 7
+    daily
+    missingok
+    notifempty
+    sharedscripts
+    compress
+    create 640 www-data www-data
+    copytruncate
+    postrotate
+        /bin/kill -SIGUSR1 `cat /run/php/php7.0-fpm.pid 2>/dev/null` 2>/dev/null || true
+    endscript
+}

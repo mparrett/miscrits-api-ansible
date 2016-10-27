@@ -1,0 +1,71 @@
+---
+
+- name: create log directory
+  file: 
+    path=/var/log/miscrits
+    owner=www-data
+    group=www-data
+    state=directory
+
+- name: create log
+  shell: "touch /var/log/miscrits/general.log && chown -R www-data:www-data /var/log/miscrits/"
+
+- name: create php log
+  file: path=/var/log/miscrits-php.log state=touch owner=www-data group=www-data
+
+- name: copy nginx virtual host
+  template: src=../templates/miscrits.conf.j2 dest=/etc/nginx/sites-available/miscrits.conf
+  notify: reload nginx
+
+- name: symlink nginx virtual host
+  file: src=/etc/nginx/sites-available/miscrits.conf dest=/etc/nginx/sites-enabled/miscrits.conf owner=www-data group=www-data state=link
+  notify: reload nginx
+
+- name: create php7-fpm logs
+  shell: "mkdir -p /var/log/php7-fpm && touch /var/log/php7-fpm/www.access.log && chown -R www-data:www-data /var/log/php7-fpm/"
+
+- name: create source directory
+  file: 
+    path=/usr/local/home/vhosts
+    state=directory
+    owner=www-data
+    group=www-data
+
+- name: symlink source directory
+  file: 
+    src=/usr/local/home/vhosts
+    dest=/ulhv
+    state=link
+    owner=www-data
+    group=www-data
+
+# Download and unpack the source code (required for API servers)
+- name: download latest stable source
+  get_url: url=http://deploy.brokenbulbstudios.com/source/miscrits/miscrits-stable.tar.bz2 dest=/tmp/miscrits-stable.tar.bz2 force=yes
+  when: update_source
+
+- name: unpack source
+  shell: "cd /ulhv && mkdir -p volcanoisland.brokenbulbstudios.com/httpdocs; cd volcanoisland.brokenbulbstudios.com/httpdocs && tar xvjf /tmp/miscrits-stable.tar.bz2 && chown -R www-data:www-data /ulhv"
+  when: update_source
+
+# Download and unpack the map data (required for serving assets on static servers) 
+- name: download latest stable assets
+  get_url: 
+    url=http://deploy.brokenbulbstudios.com/source/miscrits-assets/miscrits-assets-stable.tar.bz2
+    dest=/tmp/miscrits-assets-stable.tar.bz2 force=yes
+  when: update_assets
+
+- name: unpack assets
+  shell: "cd /ulhv && mkdir -p volcanoisland.brokenbulbstudios.com/httpdocs; cd volcanoisland.brokenbulbstudios.com/httpdocs && tar xvjf /tmp/miscrits-assets-stable.tar.bz2 && chown -R www-data:www-data /ulhv"
+  when: update_assets
+
+# Download and unpack the map data (required for map calls on API servers)
+- name: download latest stable mapdata
+  get_url: 
+    url=http://deploy.brokenbulbstudios.com/source/miscrits-mapdata/miscrits-mapdata-stable.tar.bz2
+    dest=/tmp/miscrits-mapdata-stable.tar.bz2 force=yes
+  when: update_source
+
+- name: unpack mapdata
+  shell: "cd /ulhv && mkdir -p volcanoisland.brokenbulbstudios.com/httpdocs; cd volcanoisland.brokenbulbstudios.com/httpdocs && tar xvjf /tmp/miscrits-mapdata-stable.tar.bz2 && chown -R www-data:www-data /ulhv"
+  when: update_source

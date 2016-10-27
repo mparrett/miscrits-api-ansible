@@ -1,0 +1,9 @@
+# {{ ansible_managed }}
+
+-d
+logfile /var/log/memcached.log
+-m {{ memcached_memory_mb }}
+-p 11211
+-u memcache
+-l 0.0.0.0
+-c 8192

@@ -1,0 +1,48 @@
+---
+
+- name: Base required packages including nginx
+  action: apt name={{ item }} state=installed update_cache=yes
+  with_items:
+    - pkg-config
+    - build-essential
+    - make
+    - libmcrypt4
+    - libpcre3-dev
+    - libsasl2-dev
+    - nginx
+    - apachetop
+
+- name: copy sysctl
+  action: template src=../templates/sysctl.conf.j2 dest=/etc/sysctl.conf
+  notify:
+    - reload sysctls
+
+- name: copy GeoIP database
+  copy: src=../files/GeoIP.dat dest=/usr/share/GeoIP/GeoIP.dat
+
+- name: create virtual hosts directory
+  file: path=/usr/local/home/vhosts state=directory owner=www-data group=www-data
+
+- name: create virtual hosts symlink
+  file: src=/usr/local/home/vhosts dest=/ulhv state=link owner=www-data group=www-data
+
+- name: Include PHP setup
+  include: php.yml
+  tags:
+      - php-only
+
+- name: Include Nginx setup
+  include: nginx.yml
+
+- name: Include DataDog setup
+  include: datadog.yml
+
+- name: Include SoftLayer GlobalIP setup
+  include: softlayer-globalip.yml
+  when: global_ip is defined
+
+- name: Include memcached
+  include: php-memcached.yml
+  when: install_memcached_ext
+  tags:
+      - php-memcached

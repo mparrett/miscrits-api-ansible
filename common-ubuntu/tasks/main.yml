@@ -1,0 +1,48 @@
+---
+- apt: update_cache=yes cache_valid_time=3600
+
+- name: install pycurl in order to use the apt_repository module
+  apt: pkg=python-pycurl state=present
+  sudo: yes
+
+- name: common packages
+  action: "apt name={{ item }} state=installed"
+  with_items:
+    - ntp
+    - snmpd
+    - snmp
+    - vim
+    - htop
+    - debconf-utils
+    - timelimit
+
+- name: upgrade packages
+  apt: upgrade=dist
+
+- include: monitoring.yml
+  when: monitoring_enabled
+
+- name: copy ulimits
+  copy: src=../files/limits.conf dest=/etc/security/limits.conf
+
+- name: copy ntp conf
+  template: src=../templates/ntp.conf.j2 dest=/etc/snmp/ntp.conf
+  notify: restart ntp
+
+- name: update time
+  shell: "ntpdate -u {{ time_server }}"
+  async: 45
+  poll: 0
+
+- name: copy sysctl conf
+  action: template src=../templates/sysctl.conf.j2 dest=/etc/sysctl.conf
+  notify:
+    - reload sysctls
+
+- name: copy snmpd conf
+  template: src=../templates/snmpd.conf.j2 dest=/etc/snmp/snmpd.conf
+  notify: restart snmpd
+  when: snmpd
+
+- include: secure.yml
+  when: run_security

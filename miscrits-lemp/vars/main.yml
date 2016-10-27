@@ -1,0 +1,5 @@
+---
+
+memcached_memory_mb: 4096
+update_assets: False
+update_source: True

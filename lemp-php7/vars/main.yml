@@ -1,0 +1,16 @@
+---
+
+large_swapfile: false
+swapfile_size_gb: 32
+adjust_swappiness: true
+
+# SoftLayer: If using a GlobalIP (elastic IP)
+#global_ip: 108.168.254.245
+
+pm_max_children: 60 
+pm_start_servers: 20 
+pm_min_spare: 12
+pm_max_spare: 60
+pm_max_requests: 200
+
+install_memcached_ext: true

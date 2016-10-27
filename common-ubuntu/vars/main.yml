@@ -1,0 +1,18 @@
+---
+admin_ip: 12.34.56.78
+time_server: us.pool.ntp.org 
+snmpd: False
+monitoring_enabled: True
+datadog_enabled: True
+newrelic_enabled: True
+newrelic_license: SECRET
+datadog_api_key: SECRET
+
+run_security: False
+disable_passwords: False
+lockdown_fully: False
+allowed_ports:
+  - 9022
+  - 22
+  - 443
+  - 80

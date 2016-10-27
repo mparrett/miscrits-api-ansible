@@ -1,0 +1,7 @@
+[Main]
+
+dd_url: https://app.datadoghq.com
+api_key: {{ datadog_api_key }}
+tags: {{ datadog_tags | default('env:dev,role:general,game:none') }}
+use_mount: no
+

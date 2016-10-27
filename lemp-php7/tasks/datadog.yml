@@ -1,0 +1,13 @@
+---
+
+- name: copy datadog php plugin
+  template: src=../files/php.py dest=/etc/dd-agent/checks.d/php.py
+  notify: restart datadog-agent
+
+- name: copy datadog php integration config
+  template: src=../files/php.yaml dest=/etc/dd-agent/conf.d/php.yaml
+  notify: restart datadog-agent
+
+- name: copy datadog nginx integration config
+  template: src=../templates/nginx.yaml dest=/etc/dd-agent/conf.d/nginx.yaml
+  notify: restart datadog-agent

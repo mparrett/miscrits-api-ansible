@@ -1,0 +1,101 @@
+# {{ ansible_managed }}
+
+server {
+
+    root /usr/local/home/vhosts/volcanoisland.brokenbulbstudios.com/httpdocs;
+
+    index /m/core.php;
+
+    server_name volcanoisland.brokenbulbstudios.com
+				miscrits.brokenbulbstudios.com
+				miscritscdn.brokenbulbstudios.com
+				miscritscdn1.brokenbulbstudios.com
+				miscritscdn2.brokenbulbstudios.com
+				miscritscdn3.brokenbulbstudios.com
+				miscrits0-a.akamaihd.net
+				origin-miscrits.brokenbulbstudios.com
+				;
+
+    # rewrite all uri to core.php
+
+    try_files $uri $uri/ /m/app/core.php?$args;
+
+    location = / {
+        rewrite ^ /m/app/core.php last;
+    }
+
+    # php-fpm bridge
+    # execute all .php files with php-fpm
+    location ~ .php$ {
+        #fastcgi_pass   127.0.0.1:9000;
+        fastcgi_pass unix:/var/run/php7-fpm.sock;
+        fastcgi_index  m/app/core.php;
+        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+
+        # TODO: Are these buffer sizes sane?
+
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 256 16k;
+        fastcgi_busy_buffers_size 256k;
+        fastcgi_temp_file_write_size 256k;
+
+        include fastcgi_params;
+    }
+}
+
+server {
+    #listen   80; ## listen for ipv4; this line is default and implied
+    #listen   [::]:80 default ipv6only=on; ## listen for ipv6
+
+    listen 443 ssl;
+    ssl on;
+    ssl_certificate /etc/certs/brokenbulbstudios.com.chained.crt;
+    ssl_certificate_key /etc/certs/brokenbulbstudios.com.key;
+    ssl_session_cache   shared:SSL:20m;
+    ssl_session_timeout 10m;
+    ssl_ciphers RC4:HIGH:!aNULL:!MD5;
+    ssl_prefer_server_ciphers on;
+
+    root /usr/local/home/vhosts/volcanoisland.brokenbulbstudios.com/httpdocs;
+    index /m/app/core.php;
+
+    # Make site accessible from http://localhost/
+    server_name volcanoisland.brokenbulbstudios.com
+				miscrits.brokenbulbstudios.com
+				miscritscdn.brokenbulbstudios.com
+				miscritscdn1.brokenbulbstudios.com
+				miscritscdn2.brokenbulbstudios.com
+				miscritscdn3.brokenbulbstudios.com
+				miscrits0-a.akamaihd.net
+				origin-miscrits.brokenbulbstudios.com
+				;
+
+    # custom setting
+    # this line is useful for php frameworks that use regex routing
+    # rewrite all uri to index.php
+
+    try_files $uri $uri/ /m/app/core.php?$args;
+
+    location = / {
+        rewrite ^ /m/app/core.php last;
+    }
+
+    # php-fpm bridge
+    # execute all .php files with php-fpm
+
+    location ~ .php$ {
+        #fastcgi_pass   127.0.0.1:9000;
+        fastcgi_pass unix:/var/run/php7-fpm.sock;
+        fastcgi_index  m/app/core.php;
+        fastcgi_param  SCRIPT_FILENAME $document_root$fastcgi_script_name;
+
+        fastcgi_buffer_size 128k;
+        fastcgi_buffers 256 16k;
+        fastcgi_busy_buffers_size 256k;
+        fastcgi_temp_file_write_size 256k;
+
+        fastcgi_param HTTPS on;
+
+        include fastcgi_params;
+    }
+}

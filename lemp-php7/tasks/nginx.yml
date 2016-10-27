@@ -1,0 +1,25 @@
+---
+
+- name: prep certs dir
+  file: path=/etc/certs state=directory
+
+- name: upload nginx certs
+  copy: src="{{ item }}" dest=/etc/certs
+  with_items:
+    - "../files/brokenbulbstudios.com.crt"
+    - "../files/brokenbulbstudios.com.key"
+    - "../files/brokenbulbstudios.com.bundle.crt"
+    - "../files/brokenbulbstudios.com.chained.crt"
+
+- name: copy nginx conf
+  template: src=../templates/nginx.conf.j2 dest=/etc/nginx/nginx.conf
+  notify: reload nginx
+
+- name: copy nginx default conf
+  template: src=../templates/default.j2 dest=/etc/nginx/sites-available/default
+  notify: reload nginx
+
+- template: src=../templates/logrotate/nginx.j2 dest=/etc/logrotate.d/nginx
+- template: src=../templates/logrotate/php-fpm.j2 dest=/etc/logrotate.d/php-fpm
+
+- service: name=nginx state=started enabled=yes

@@ -1,0 +1,79 @@
+---
+
+- name: phpredis git php7 branch
+  git: repo=https://github.com/phpredis/phpredis.git dest=/tmp/phpredis version=3.0.0
+
+- name: build phpredis extension
+  command: "{{ item }}"
+  args:
+    chdir: /tmp/phpredis
+    creates: /usr/lib/php/20151012/redis.so
+  with_items:
+    - phpize
+    - ./configure --enable-apcu
+    - make
+    - make install
+
+- name: apcu git 5.1.4
+  git: repo=https://github.com/krakjoe/apcu.git dest=/tmp/apcu version=v5.1.5
+
+- name: build apcu extension
+  command: "{{ item }}"
+  args:
+    chdir: /tmp/apcu
+    creates: /usr/lib/php/20151012/apcu.so
+  with_items:
+    - phpize
+    - ./configure --enable-apcu
+    - make
+    - make install
+  tags:
+    - apcu
+
+- name: apcu_bc git 1.0.3
+  git: repo=https://github.com/krakjoe/apcu-bc.git dest=/tmp/apcu_bc version=v1.0.3
+  tags:
+    - apcu
+
+- name: build apcu_bc extension
+  command: "{{ item }}"
+  args:
+    chdir: /tmp/apcu_bc
+    creates: /usr/lib/php/20151012/apc.so
+  with_items:
+    - phpize
+    - ./configure --enable-apcu_bc
+    - make
+    - make install
+  tags:
+    - apcu
+  
+- name: download libmemcached
+  get_url: url=https://launchpad.net/libmemcached/1.0/1.0.18/+download/libmemcached-1.0.18.tar.gz dest=/tmp/libmemcached-1.0.18.tar.gz
+
+- name: untar libmemcached
+  command: tar zxf /tmp/libmemcached-1.0.18.tar.gz -C /tmp
+
+- name: build and install libmemcached
+  command: "{{ item }}"
+  args:
+    chdir: /tmp/libmemcached-1.0.18
+    creates: /usr/local/lib/libmemcached.so
+  with_items:
+    - ./configure
+    - make
+    - make install
+
+- name: acquire php-memcached extension for php7
+  git: repo=https://github.com/php-memcached-dev/php-memcached.git dest=/tmp/memcached-php7 version=php7
+
+- name: build memcached extension
+  command: "{{ item }}"
+  args:
+    chdir: /tmp/memcached-php7
+    creates: /usr/lib/php/20151012/memcached.so
+  with_items:
+    - phpize
+    - ./configure --enable-memcached
+    - make
+    - make install

@@ -1,0 +1,9 @@
+---
+
+- name: Enable virtual interface for SoftLayer GlobalIP
+  command: ifconfig eth1:0 {{ global_ip }} netmask 255.255.255.255 up
+
+- name: Enable virtual interface for SoftLayer GlobalIP on reboot
+  shell: "grep 'eth1:0' /etc/network/interfaces||cat /tmp/interfaces.frag|sudo tee -a /etc/network/interfaces"
+
+- template: src=../templates/interfaces-fragment.j2 dest=/tmp/interfaces.frag

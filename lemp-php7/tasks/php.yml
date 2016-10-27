@@ -1,0 +1,82 @@
+---
+
+- name: Python software properties for PPA 
+  action: apt name=python-software-properties state=installed
+
+- name: Add PHP 7 PPA
+  apt_repository: repo=ppa:ondrej/php update_cache=yes
+
+- name: required packages
+  action: apt name={{ item }} state=installed update_cache=yes
+  with_items:
+    - php7.0-fpm
+    - php7.0-cli
+    - php7.0-common
+    - php7.0-mcrypt
+    - php7.0-mysql
+    - php7.0-curl
+    - php7.0-imap
+    - php7.0-dev
+    - php7.0-xmlrpc
+    - php7.0-xsl
+    - php7.0-geoip
+    - php-pear
+    - git
+  tags:
+    - packages
+
+- name: upgrade pear for php 7
+  command: "{{ item }}"
+  with_items:
+    - pear clear-cache
+    - pear upgrade pear-1.10.1
+  ignore_errors: true
+
+- name: install pear modules
+  pear: name={{ item }} state=present
+  with_items: 
+    - Net_Socket
+    - Log
+    - pecl/geoip
+  tags:
+    - pear
+
+- service: name=php7.0-fpm state=started enabled=yes
+
+- name: copy php-fpm pool config
+  template: src=../templates/www.conf.j2 dest=/etc/php/7.0/fpm/pool.d/www.conf
+  notify:
+    - reload php7.0-fpm
+
+- name: copy php ini files
+  action: template src=../templates/{{ item }}.j2 dest=/etc/php/7.0/fpm/conf.d/{{ item }}
+  with_items:
+    - bb.ini
+  notify:
+    - reload php7.0-fpm
+
+- name: enable pecl modules
+  shell: echo "extension={{ item.ext }}.so" > /etc/php/7.0/mods-available/{{ item.file }}.ini
+  with_items:
+    - { ext: apcu, file: apcu }
+    - { ext: apc, file: apcu_bc }
+    - { ext: memcached, file: 50-memcached }
+    - { ext: redis, file: redis }
+    - { ext: geoip, file: geoip }
+  notify:
+    - reload php7.0-fpm
+  tags: 
+    - pecl
+
+- name: enable pecl modules
+  file: state=link src=/etc/php/7.0/mods-available/{{ item.file }}.ini dest=/etc/php/7.0/fpm/conf.d/{{ item.file }}.ini
+  with_items:
+    - { ext: apcu, file: apcu }
+    - { ext: apc, file: apcu_bc }
+    - { ext: memcached, file: 50-memcached }
+    - { ext: redis, file: redis }
+    - { ext: geoip, file: geoip }
+  notify:
+    - reload php7.0-fpm
+  tags: 
+    - pecl
